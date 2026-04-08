@@ -1,7 +1,3 @@
-/**
- * Authentication Service — connected to real backend API
- */
-
 import { apiClient, APIError } from "../api/client";
 import {
   LoginRequestDTO,

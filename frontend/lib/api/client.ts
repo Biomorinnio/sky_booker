@@ -1,8 +1,3 @@
-/**
- * API Client for SkyBooker backend communication
- * TODO: Backend integration - configure actual API endpoint
- */
-
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 

@@ -1309,7 +1309,7 @@ $router->post('/api/auth/forgot-password', function () {
     $db->prepare('UPDATE users SET reset_token = ?, reset_token_expires = ?, updated_at = NOW() WHERE id = ?')
        ->execute([$token, $expires, $user['id']]);
 
-    // В реальном проекте — отправить письмо. Здесь — возвращаем токен в ответе.
+    // email-отправка не реализована — токен возвращаем напрямую
     Response::json([
         'message' => 'Код для сброса пароля создан',
         'token'   => $token,

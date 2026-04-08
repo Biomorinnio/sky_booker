@@ -14,8 +14,6 @@ class Auth
     private static int    $accessTTL    = 3600;       // 1 час
     private static int    $refreshTTL   = 2592000;    // 30 дней
 
-    // ── Token generation ──────────────────────────────────────────────────
-
     public static function generateAccessToken(array $payload): string
     {
         return self::encode($payload, self::$accessTTL);
@@ -36,8 +34,6 @@ class Auth
         return "$header.$body.$sig";
     }
 
-    // ── Token validation ──────────────────────────────────────────────────
-
     public static function validateToken(string $token): ?array
     {
         $parts = explode('.', $token);
@@ -55,8 +51,6 @@ class Auth
         }
         return $data;
     }
-
-    // ── Request helpers ───────────────────────────────────────────────────
 
     public static function getTokenFromRequest(): ?string
     {
@@ -95,8 +89,6 @@ class Auth
         return $payload;
     }
 
-    // ── Password helpers ──────────────────────────────────────────────────
-
     public static function hashPassword(string $password): string
     {
         return password_hash($password, PASSWORD_BCRYPT, ['cost' => 10]);
@@ -106,8 +98,6 @@ class Auth
     {
         return password_verify($password, $hash);
     }
-
-    // ── Utility ───────────────────────────────────────────────────────────
 
     private static function b64(string $data): string
     {

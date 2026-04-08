@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
                 Код сброса пароля
               </h1>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                В реальном приложении код был бы отправлен на email. Для демонстрации он показан здесь:
+                Код сброса отправлен на указанный email. Скопируйте его ниже, если письмо ещё не пришло:
               </p>
             </div>
 
