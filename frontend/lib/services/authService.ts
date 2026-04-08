@@ -11,7 +11,6 @@ import { UserRole } from "@/types/database";
 class AuthService {
   private listeners: Set<() => void> = new Set();
 
-  /** Subscribe to auth state changes. Returns unsubscribe function. */
   onChange(cb: () => void): () => void {
     this.listeners.add(cb);
     return () => this.listeners.delete(cb);

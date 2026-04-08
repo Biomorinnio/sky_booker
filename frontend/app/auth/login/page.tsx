@@ -134,7 +134,7 @@ export default function LoginPage() {
 
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-4">
-              Тестовые аккаунты для демонстрации:
+              Тестовые аккаунты:
             </p>
             <div className="space-y-2 text-xs">
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded p-2">

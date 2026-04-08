@@ -1,8 +1,5 @@
 <?php
-/**
- * Database configuration for Sky Booker backend
- * Adjust host/dbname/username/password to match your phpMyAdmin setup
- */
+// Параметры подключения к MySQL — поменяй password если нужно
 return [
     'host'     => 'localhost',
     'dbname'   => 'sky_booker',

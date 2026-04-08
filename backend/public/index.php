@@ -186,7 +186,6 @@ function fetchFullBooking(string $id, PDO $db): ?array
         JOIN bookings b ON b.flight_id = f.id
         WHERE b.id = ?
     ';
-    // We'll just join via bookings
     $bStmt = $db->prepare('SELECT * FROM bookings WHERE id = ?');
     $bStmt->execute([$id]);
     $b = $bStmt->fetch();
@@ -728,7 +727,6 @@ $router->patch('/api/flights/:id/status', function (array $p) {
 
     $rows = $db->prepare('UPDATE flights SET ' . implode(', ', $sets) . ' WHERE id = ?')->execute($binds);
 
-    // Verify it exists
     $check = $db->prepare('SELECT id FROM flights WHERE id = ?');
     $check->execute([$p['id']]);
     if (!$check->fetch()) {
@@ -802,7 +800,6 @@ $router->post('/api/bookings', function () {
 
     $db = Database::getInstance();
 
-    // Verify flight
     $fStmt = $db->prepare("SELECT * FROM flights WHERE id = ? AND status NOT IN ('cancelled')");
     $fStmt->execute([$b['flightId']]);
     $flight = $fStmt->fetch();
@@ -810,7 +807,6 @@ $router->post('/api/bookings', function () {
         Response::error('FLIGHT_NOT_FOUND', 'Flight not found or unavailable', 404);
     }
 
-    // Verify fare
     $fareStmt = $db->prepare('SELECT * FROM fares WHERE id = ? AND flight_id = ?');
     $fareStmt->execute([$b['fareId'], $b['flightId']]);
     $fare = $fareStmt->fetch();
@@ -822,7 +818,6 @@ $router->post('/api/bookings', function () {
         Response::error('NO_SEATS', 'Not enough available seats in this fare class', 409);
     }
 
-    // Verify seat (optional)
     $seatId = $b['seatId'] ?? null;
     if ($seatId) {
         $seatChk = $db->prepare('SELECT id FROM seats WHERE id = ?');
