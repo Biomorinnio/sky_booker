@@ -1,0 +1,21 @@
+{
+    "name": "sky-booker/backend",
+    "description": "Sky Booker REST API — PHP 8+ backend for airline booking system",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "SkyBooker\\": "src/"
+        }
+    },
+    "scripts": {
+        "serve": "php -S localhost:3001 router.php",
+        "serve:3001": "php -S localhost:3001 router.php"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

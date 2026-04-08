@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php:*)",
+      "Bash(where php:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(git -C C:/OSPanel/domains/sky-booker status)"
+    ]
+  }
+}
