@@ -1,0 +1,11 @@
+.bg-liquid-glass {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  @apply bg-muted/25;
+}
+
+@supports not (hanging-punctuation: first) {
+  .bg-liquid-glass {
+    backdrop-filter: url("/displacementFilter.svg#displacementFilter") blur(2px);
+  }
+}
