@@ -65,8 +65,8 @@ export default function TicketPage() {
       <div className="min-h-screen pt-24 pb-16 px-4 bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 dark:text-red-400 text-lg mb-4">{error || "Билет не найден"}</p>
-          <Link href="/profile">
-            <Button variant="outline">← Мои бронирования</Button>
+          <Link href="/account">
+            <Button variant="outline">← Личный кабинет</Button>
           </Link>
         </div>
       </div>
@@ -87,9 +87,9 @@ export default function TicketPage() {
       <div className="max-w-2xl mx-auto">
         {/* Back + Print */}
         <div className="flex items-center justify-between mb-6 print:hidden">
-          <Link href="/profile" className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
+          <Link href="/account" className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
             <ArrowLeft className="w-4 h-4" />
-            Мои бронирования
+            Личный кабинет
           </Link>
           <Button
             onClick={() => window.print()}
@@ -248,6 +248,28 @@ export default function TicketPage() {
                 {booking.totalAmount?.toLocaleString()} ₽
               </p>
             </div>
+          </div>
+
+          {/* Barcode section */}
+          <div className="px-6 py-5 border-t border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center gap-3">
+            {/* SVG barcode imitation */}
+            <div className="flex items-end gap-px h-14">
+              {Array.from({ length: 60 }, (_, i) => {
+                const seed = (i * 7 + 13) % 17;
+                const w = seed % 3 === 0 ? 3 : seed % 3 === 1 ? 2 : 1;
+                const h = 40 + (seed * 3) % 24;
+                return (
+                  <div
+                    key={i}
+                    className="bg-gray-900 dark:bg-gray-100"
+                    style={{ width: w, height: h }}
+                  />
+                );
+              })}
+            </div>
+            <p className="font-mono text-xs text-gray-500 dark:text-gray-400 tracking-[0.3em]">
+              {booking.pnr}-{ticketNumber.slice(-6)}
+            </p>
           </div>
 
           {/* Footer */}

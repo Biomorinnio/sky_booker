@@ -4,12 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Mail,
   Lock,
   User,
   Phone,
-  Calendar,
   FileText,
   Plane,
   AlertCircle,
@@ -213,14 +213,13 @@ export default function RegisterPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Дата рождения *
                 </label>
-                <input
-                  type="date"
-                  name="dateOfBirth"
+                <DatePicker
                   value={formData.dateOfBirth}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  required
+                  onChange={(val) => setFormData({ ...formData, dateOfBirth: val })}
+                  placeholder="Выберите дату рождения"
+                  max={new Date().toISOString().split("T")[0]}
                   disabled={isLoading}
+                  required
                 />
               </div>
 
@@ -283,15 +282,13 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Срок действия документа *
               </label>
-              <input
-                type="date"
-                name="documentExpiry"
+              <DatePicker
                 value={formData.documentExpiry}
-                onChange={handleChange}
+                onChange={(val) => setFormData({ ...formData, documentExpiry: val })}
+                placeholder="Выберите дату"
                 min={new Date().toISOString().split("T")[0]}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                required
                 disabled={isLoading}
+                required
               />
             </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Flight, Fare } from "@/types";
@@ -14,7 +14,6 @@ import {
   ArrowLeftRight,
   SlidersHorizontal,
   X,
-  Calendar,
   Users,
   Search,
   BarChart2,
@@ -22,6 +21,7 @@ import {
   Square,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -146,7 +146,6 @@ function SearchPageContent() {
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
   const [compareList, setCompareList] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
-  const dateRef = useRef<HTMLInputElement>(null);
 
   const toggleCompare = (flightId: string) => {
     setCompareList((prev) => {
@@ -172,16 +171,22 @@ function SearchPageContent() {
     setPassengers(Number(sp.get("passengers") ?? 1));
   }, [sp]);
 
-  // Load flights from backend
+  // Load flights from backend (with auto date-refresh)
   useEffect(() => {
     setLoadingFlights(true);
     setFlightsError("");
+    // Сначала сдвигаем даты рейсов, затем загружаем
     apiClient
-      .get<{ data: any[]; pagination: any }>("/flights?limit=100")
-      .then((res) => {
-        const mapped = (res.data ?? []).map(mapFlightDTO);
+      .get<any>("/flights/refresh-dates")
+      .catch(() => {}) // игнорируем ошибку refresh — просто грузим как есть
+      .then(() =>
+        apiClient.get<{ data: any[]; pagination: any }>("/flights?limit=200")
+      )
+      .then((res: any) => {
+        const data = res?.data ?? [];
+        const mapped = data.map(mapFlightDTO);
         const faresDict: Record<string, Fare[]> = {};
-        (res.data ?? []).forEach((dto: any) => {
+        data.forEach((dto: any) => {
           faresDict[dto.id] = mapFaresDTO(dto.id, dto.fares ?? []);
         });
         setApiFlights(mapped);
@@ -231,6 +236,14 @@ function SearchPageContent() {
       result = result.filter((f) =>
         f.destination.toLowerCase().includes(destination.toLowerCase())
       );
+    }
+    // Фильтр по дате вылета
+    if (date) {
+      result = result.filter((f) => {
+        // Сравниваем первые 10 символов ISO-строки (YYYY-MM-DD)
+        const flightDate = f.departureTime.slice(0, 10);
+        return flightDate === date;
+      });
     }
     if (query) {
       const q = query.toLowerCase();
@@ -303,6 +316,7 @@ function SearchPageContent() {
     apiFaresDict,
     origin,
     destination,
+    date,
     query,
     airline,
     stops,
@@ -352,143 +366,128 @@ function SearchPageContent() {
     departureTime !== "all" ||
     fareClass !== "all";
 
+  const sliderCls =
+    "w-full h-2 rounded-full appearance-none cursor-pointer accent-blue-600 dark:accent-blue-400 bg-gray-200 dark:bg-gray-600";
+
   const Sidebar = () => (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/50 space-y-5 sticky top-24">
-      <div className="flex items-center justify-between">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden sticky top-24">
+      {/* Цветная шапка */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          <span className="font-semibold text-gray-800 dark:text-white text-sm">Фильтры</span>
+          <SlidersHorizontal className="w-4 h-4 text-white/80" />
+          <span className="font-semibold text-white text-sm tracking-wide">Фильтры</span>
           {hasActiveFilters && (
-            <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">!</span>
+            <span className="bg-white/20 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">!</span>
           )}
         </div>
         {hasActiveFilters && (
-          <button onClick={resetFilters} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+          <button onClick={resetFilters} className="text-xs text-white/80 hover:text-white flex items-center gap-1 transition-colors">
             <X className="w-3 h-3" />Сбросить
           </button>
         )}
       </div>
 
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Сортировка</label>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className={selectCls}>
-          <option value="price_asc">Цена: по возрастанию</option>
-          <option value="price_desc">Цена: по убыванию</option>
-          <option value="duration_asc">Время в пути: короче</option>
-          <option value="departure_asc">Вылет: раньше</option>
-          <option value="departure_desc">Вылет: позже</option>
-        </select>
-      </div>
+      <div className="p-5 space-y-5">
+        <div>
+          <label className="block text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 uppercase tracking-wide">Сортировка</label>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className={selectCls}>
+            <option value="price_asc">Цена: по возрастанию</option>
+            <option value="price_desc">Цена: по убыванию</option>
+            <option value="duration_asc">Время в пути: короче</option>
+            <option value="departure_asc">Вылет: раньше</option>
+            <option value="departure_desc">Вылет: позже</option>
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Цена</label>
-        <div className="space-y-3">
-          <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 font-medium">
-            <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded font-semibold">{minPrice.toLocaleString()} ₽</span>
-            <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded font-semibold">{maxPrice.toLocaleString()} ₽</span>
-          </div>
-          <div className="relative h-8 flex items-center">
-            {/* Track background */}
-            <div className="absolute left-0 right-0 h-2 bg-gray-200 dark:bg-gray-600 rounded-full" />
-            {/* Active track */}
-            <div
-              className="absolute h-2 bg-blue-500 dark:bg-blue-400 rounded-full"
-              style={{
-                left: `${((minPrice - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
-                right: `${100 - ((maxPrice - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
-              }}
-            />
-            {/* Min slider */}
-            <input
-              type="range"
-              min={PRICE_MIN}
-              max={PRICE_MAX}
-              step={500}
-              value={minPrice}
-              onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice - 500))}
-              className="absolute w-full h-8 appearance-none bg-transparent pointer-events-none z-10
-                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-                [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2
-                [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer
-                [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:hover:scale-125
-                [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110
-                [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full
-                [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-500
-                [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto"
-            />
-            {/* Max slider */}
-            <input
-              type="range"
-              min={PRICE_MIN}
-              max={PRICE_MAX}
-              step={500}
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice + 500))}
-              className="absolute w-full h-8 appearance-none bg-transparent pointer-events-none z-20
-                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-                [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2
-                [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer
-                [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:hover:scale-125
-                [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110
-                [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full
-                [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-500
-                [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto"
-            />
-          </div>
-          <div className="flex justify-between text-[10px] text-gray-400 dark:text-gray-500">
-            <span>{PRICE_MIN.toLocaleString()} ₽</span>
-            <span>{PRICE_MAX.toLocaleString()} ₽</span>
+        {/* Цена — два отдельных слайдера */}
+        <div>
+          <label className="block text-xs font-semibold text-blue-600 dark:text-blue-400 mb-3 uppercase tracking-wide">Цена</label>
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">От</span>
+                <span className="text-xs font-bold text-gray-900 dark:text-white bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">
+                  {minPrice.toLocaleString()} ₽
+                </span>
+              </div>
+              <input
+                type="range"
+                min={PRICE_MIN}
+                max={PRICE_MAX}
+                step={500}
+                value={minPrice}
+                onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice - 500))}
+                className={sliderCls}
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">До</span>
+                <span className="text-xs font-bold text-gray-900 dark:text-white bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">
+                  {maxPrice.toLocaleString()} ₽
+                </span>
+              </div>
+              <input
+                type="range"
+                min={PRICE_MIN}
+                max={PRICE_MAX}
+                step={500}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice + 500))}
+                className={sliderCls}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Авиакомпания</label>
-        <select value={airline} onChange={(e) => setAirline(e.target.value)} className={selectCls}>
-          <option value="all">Все авиакомпании</option>
-          {allAirlines.map((a) => (<option key={a} value={a}>{a}</option>))}
-        </select>
-      </div>
+        <div>
+          <label className="block text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 uppercase tracking-wide">Авиакомпания</label>
+          <select value={airline} onChange={(e) => setAirline(e.target.value)} className={selectCls}>
+            <option value="all">Все авиакомпании</option>
+            {allAirlines.map((a) => (<option key={a} value={a}>{a}</option>))}
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Пересадки</label>
-        <select value={stops} onChange={(e) => setStops(e.target.value)} className={selectCls}>
-          <option value="all">Любые</option>
-          <option value="0">Прямые</option>
-          <option value="1">1 пересадка</option>
-          <option value="2+">2 и более</option>
-        </select>
-      </div>
+        <div>
+          <label className="block text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 uppercase tracking-wide">Пересадки</label>
+          <select value={stops} onChange={(e) => setStops(e.target.value)} className={selectCls}>
+            <option value="all">Любые</option>
+            <option value="0">Прямые</option>
+            <option value="1">1 пересадка</option>
+            <option value="2+">2 и более</option>
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Время вылета</label>
-        <select value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} className={selectCls}>
-          <option value="all">Любое</option>
-          <option value="night">Ночь (00:00–06:00)</option>
-          <option value="morning">Утро (06:00–12:00)</option>
-          <option value="afternoon">День (12:00–18:00)</option>
-          <option value="evening">Вечер (18:00–00:00)</option>
-        </select>
-      </div>
+        <div>
+          <label className="block text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 uppercase tracking-wide">Время вылета</label>
+          <select value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} className={selectCls}>
+            <option value="all">Любое</option>
+            <option value="night">Ночь (00:00–06:00)</option>
+            <option value="morning">Утро (06:00–12:00)</option>
+            <option value="afternoon">День (12:00–18:00)</option>
+            <option value="evening">Вечер (18:00–00:00)</option>
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Класс тарифа</label>
-        <select value={fareClass} onChange={(e) => setFareClass(e.target.value)} className={selectCls}>
-          <option value="all">Все классы</option>
-          <option value="Economy">Эконом</option>
-          <option value="Comfort">Комфорт</option>
-          <option value="Business">Бизнес</option>
-        </select>
+        <div>
+          <label className="block text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 uppercase tracking-wide">Класс тарифа</label>
+          <select value={fareClass} onChange={(e) => setFareClass(e.target.value)} className={selectCls}>
+            <option value="all">Все классы</option>
+            <option value="Economy">Эконом</option>
+            <option value="Comfort">Комфорт</option>
+            <option value="Business">Бизнес</option>
+          </select>
+        </div>
       </div>
     </div>
   );
 
   return (
     <div className="min-h-screen pt-24 pb-16 bg-gray-50 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/50 shadow-sm">
+      <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 shadow-md">
         <form onSubmit={handleSearch} className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[140px]">
-            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Откуда</label>
+            <label className="block text-xs text-white/80 mb-1 uppercase tracking-wide font-medium">Откуда</label>
             <select value={origin} onChange={(e) => setOrigin(e.target.value)} className={selectCls}>
               <option value="">Любой</option>
               {dynamicCities.map((c) => (<option key={c.code} value={c.city}>{c.city}</option>))}
@@ -496,35 +495,38 @@ function SearchPageContent() {
           </div>
 
           <button type="button" onClick={swapCities}
-            className="mb-0.5 p-2 rounded-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-400 transition-all self-end"
+            className="mb-0.5 p-2 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-white transition-all self-end"
             title="Поменять">
             <ArrowLeftRight className="w-4 h-4" />
           </button>
 
           <div className="flex-1 min-w-[140px]">
-            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Куда</label>
+            <label className="block text-xs text-white/80 mb-1 uppercase tracking-wide font-medium">Куда</label>
             <select value={destination} onChange={(e) => setDestination(e.target.value)} className={selectCls}>
               <option value="">Любой</option>
               {dynamicCities.filter((c) => c.city !== origin).map((c) => (<option key={c.code} value={c.city}>{c.city}</option>))}
             </select>
           </div>
 
-          <div className="min-w-[140px]">
-            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Дата</label>
-            <input ref={dateRef} type="date" value={date} onChange={(e) => setDate(e.target.value)}
+          <div className="min-w-[160px]">
+            <label className="block text-xs text-white/80 mb-1 uppercase tracking-wide font-medium">Дата</label>
+            <DatePicker
+              value={date}
+              onChange={setDate}
+              placeholder="Любая дата"
               min={new Date().toISOString().split("T")[0]}
-              onClick={() => { try { dateRef.current?.showPicker(); } catch {} }}
-              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+              className="border-white/30 py-2 bg-white dark:bg-gray-700"
+            />
           </div>
 
           <div className="min-w-[110px]">
-            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Пассажиры</label>
+            <label className="block text-xs text-white/80 mb-1 uppercase tracking-wide font-medium">Пассажиры</label>
             <select value={passengers} onChange={(e) => setPassengers(Number(e.target.value))} className={selectCls}>
               {[1, 2, 3, 4, 5, 6].map((n) => (<option key={n} value={n}>{n} чел.</option>))}
             </select>
           </div>
 
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 h-[38px] flex items-center gap-2 rounded-lg self-end text-sm font-medium">
+          <Button type="submit" className="bg-white hover:bg-gray-50 text-blue-700 font-semibold px-5 py-2 h-[38px] flex items-center gap-2 rounded-lg self-end text-sm shadow-md">
             <Search className="w-4 h-4" />Найти
           </Button>
         </form>
@@ -533,7 +535,8 @@ function SearchPageContent() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <span className="inline-block w-1 h-5 bg-blue-600 rounded-full" />
               {query ? `Поиск: «${query}»` : origin || destination ? `${origin || "—"} → ${destination || "—"}` : "Все рейсы"}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -756,7 +759,7 @@ function FlightCard({
   const minPrice = fares.length > 0 ? Math.min(...fares.map((f) => f.price)) : 0;
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow ${
+    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 ${
       isInCompare ? "border-green-400 dark:border-green-600" : "border-gray-100 dark:border-gray-700/50"
     }`}>
       <div className="p-5">

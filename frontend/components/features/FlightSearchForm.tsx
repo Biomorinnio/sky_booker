@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowLeftRight, Calendar, Users } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Search, ArrowLeftRight, Users } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 
 interface CityOption {
@@ -21,12 +22,12 @@ export const FlightSearchForm = () => {
   const [departureDate, setDepartureDate] = useState("");
   const [passengers, setPassengers] = useState(1);
   const [cities, setCities] = useState<CityOption[]>([]);
-  const dateRef = useRef<HTMLInputElement>(null);
 
-  // Load unique cities from flights API
+  // Load unique cities from flights API (with auto date-refresh)
   useEffect(() => {
+    apiClient.get<any>("/flights/refresh-dates").catch(() => {});
     apiClient
-      .get<{ data: any[] }>("/flights?limit=100")
+      .get<{ data: any[] }>("/flights?limit=200")
       .then((res) => {
         const cityMap = new Map<string, string>();
         (res.data ?? []).forEach((dto: any) => {
@@ -58,14 +59,6 @@ export const FlightSearchForm = () => {
   const swapCities = () => {
     setOrigin(destination);
     setDestination(origin);
-  };
-
-  const openDatePicker = () => {
-    try {
-      dateRef.current?.showPicker();
-    } catch {
-      dateRef.current?.focus();
-    }
   };
 
   return (
@@ -132,18 +125,13 @@ export const FlightSearchForm = () => {
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
                 Дата вылета
               </label>
-              <div className="relative cursor-pointer" onClick={openDatePicker}>
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                <input
-                  ref={dateRef}
-                  type="date"
-                  value={departureDate}
-                  onChange={(e) => setDepartureDate(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                  required
-                />
-              </div>
+              <DatePicker
+                value={departureDate}
+                onChange={setDepartureDate}
+                placeholder="Выберите дату вылета"
+                min={new Date().toISOString().split("T")[0]}
+                required
+              />
             </div>
 
             <div>

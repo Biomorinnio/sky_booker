@@ -8,12 +8,9 @@ import {
   Plane,
   Users,
   TrendingUp,
-  Calendar,
   BarChart3,
   Clock,
   CheckCircle,
-  XCircle,
-  AlertTriangle,
 } from "lucide-react";
 import { authService } from "@/lib/services/authService";
 import { apiClient } from "@/lib/api/client";
@@ -31,6 +28,7 @@ export default function DashboardPage() {
     averageOccupancy: 0,
   });
   const [recentFlights, setRecentFlights] = useState<any[]>([]);
+  const [topRoutes, setTopRoutes] = useState<{ route: string; bookings: number }[]>([]);
 
   useEffect(() => {
     const user = authService.getCurrentUser();
@@ -52,6 +50,7 @@ export default function DashboardPage() {
           totalRevenue: statsData.totalRevenue ?? 0,
           averageOccupancy: statsData.averageOccupancy ?? 0,
         });
+        setTopRoutes(statsData.topRoutes ?? []);
 
         const flights = (flightsData.data ?? []).map((f: any) => ({
           id: f.flightNumber,
@@ -73,23 +72,15 @@ export default function DashboardPage() {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      departed: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
-      boarding: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
       scheduled: "bg-gray-100 dark:bg-gray-700/30 text-gray-700 dark:text-gray-400",
-      delayed: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+      delayed:   "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
       cancelled: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
-      in_flight: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-      landed: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
     };
 
     const labels: Record<string, string> = {
-      departed: "Вылетел",
-      boarding: "Посадка",
       scheduled: "По расписанию",
-      delayed: "Задержка",
+      delayed:   "Задержка",
       cancelled: "Отменён",
-      in_flight: "В полёте",
-      landed: "Приземлился",
     };
 
     return (
@@ -194,6 +185,38 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
+
+        {/* Top-5 Routes */}
+        {topRoutes.length > 0 && (
+          <div className="bg-liquid-glass bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-white/20 dark:border-gray-700/20 mb-8">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Топ-5 маршрутов по бронированиям
+            </h2>
+            <div className="space-y-3">
+              {topRoutes.map((r, i) => {
+                const maxBookings = topRoutes[0]?.bookings ?? 1;
+                const pct = Math.round((r.bookings / maxBookings) * 100);
+                return (
+                  <div key={i} className="flex items-center gap-4">
+                    <span className="w-5 text-sm font-bold text-gray-400 dark:text-gray-500 flex-shrink-0">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{r.route}</span>
+                        <span className="text-sm font-bold text-blue-600 dark:text-blue-400 ml-3 flex-shrink-0">{r.bookings}</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-blue-500 dark:bg-blue-400 rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Recent Flights */}
         <div className="bg-liquid-glass bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-white/20 dark:border-gray-700/20">

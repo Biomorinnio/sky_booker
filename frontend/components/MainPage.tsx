@@ -21,21 +21,29 @@ const features = [
     icon: <Search className="w-6 h-6" />,
     title: "Удобный поиск",
     description: "Находите лучшие предложения среди тысяч рейсов за секунды",
+    color: "bg-blue-600",
+    ring: "hover:border-blue-200 dark:hover:border-blue-800",
   },
   {
     icon: <Shield className="w-6 h-6" />,
     title: "Безопасность",
     description: "Защищённые платежи и полная конфиденциальность данных",
+    color: "bg-emerald-600",
+    ring: "hover:border-emerald-200 dark:hover:border-emerald-800",
   },
   {
     icon: <Clock className="w-6 h-6" />,
     title: "Мгновенное оформление",
     description: "Выберите тариф и получите билет за несколько минут",
+    color: "bg-violet-600",
+    ring: "hover:border-violet-200 dark:hover:border-violet-800",
   },
   {
     icon: <CreditCard className="w-6 h-6" />,
     title: "Гибкая оплата",
     description: "Карты, онлайн-кошельки и другие способы оплаты",
+    color: "bg-amber-500",
+    ring: "hover:border-amber-200 dark:hover:border-amber-800",
   },
 ];
 
@@ -140,9 +148,9 @@ export default function MainPage() {
             {features.map((f, i) => (
               <div
                 key={i}
-                className="p-6 rounded-xl border border-gray-100 dark:border-gray-700/50 bg-gray-50 dark:bg-gray-800 hover:border-blue-200 dark:hover:border-blue-800 transition-colors"
+                className={`p-6 rounded-xl border border-gray-100 dark:border-gray-700/50 bg-gray-50 dark:bg-gray-800 ${f.ring} transition-all hover:shadow-md`}
               >
-                <div className="w-11 h-11 bg-blue-600 rounded-lg flex items-center justify-center text-white mb-4">
+                <div className={`w-11 h-11 ${f.color} rounded-lg flex items-center justify-center text-white mb-4 shadow-sm`}>
                   {f.icon}
                 </div>
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">

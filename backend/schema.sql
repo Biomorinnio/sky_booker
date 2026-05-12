@@ -1179,6 +1179,7 @@ VALUES
      '{"cabin":"10 кг","checked":"23 кг"}', 1, 1, 500, 300,
      '["Ручная кладь 10 кг","Багаж 23 кг","Выбор места","Питание"]');
 
+
 -- ── Seats for ac-001 (Boeing 737-800) ────────────────────────
 INSERT IGNORE INTO seats
     (id, aircraft_id, seat_number, class, `row`, `column`, is_window, is_aisle, is_emergency_exit, extra_legroom)

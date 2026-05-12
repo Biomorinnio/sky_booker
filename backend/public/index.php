@@ -88,6 +88,9 @@ function formatUser(array $u, PDO $db): array
         'phone'           => $u['phone'],
         'dateOfBirth'     => $u['date_of_birth'],
         'nationality'     => $u['nationality'],
+        'documentType'    => $u['document_type'],
+        'documentNumber'  => $u['document_number'],
+        'documentExpiry'  => $u['document_expiry'],
         'isEmailVerified' => (bool)$u['is_email_verified'],
         'isPhoneVerified' => (bool)$u['is_phone_verified'],
         'loyaltyAccount'  => $loyalty,
@@ -468,11 +471,16 @@ $router->put('/api/users/:id', function (array $p) {
     $b      = body();
     $db     = Database::getInstance();
     $map    = [
-        'firstName'  => 'first_name',
-        'lastName'   => 'last_name',
-        'middleName' => 'middle_name',
-        'phone'      => 'phone',
-        'email'      => 'email',
+        'firstName'      => 'first_name',
+        'lastName'       => 'last_name',
+        'middleName'     => 'middle_name',
+        'phone'          => 'phone',
+        'email'          => 'email',
+        'dateOfBirth'    => 'date_of_birth',
+        'nationality'    => 'nationality',
+        'documentType'   => 'document_type',
+        'documentNumber' => 'document_number',
+        'documentExpiry' => 'document_expiry',
     ];
     $sets   = ['updated_at = NOW()'];
     $binds  = [];
@@ -539,6 +547,47 @@ $router->get('/api/airports', function () {
 // ════════════════════════════════════════════════════════════
 // FLIGHTS
 // ════════════════════════════════════════════════════════════
+
+// GET /api/flights/refresh-dates — сдвигает даты рейсов чтобы они всегда были в будущем
+$router->get('/api/flights/refresh-dates', function () {
+    $db = Database::getInstance();
+
+    $minRow = $db->query("SELECT MIN(DATE(scheduled_departure)) AS min_date FROM flights")->fetch();
+    $minDate = $minRow['min_date'] ?? null;
+
+    if (!$minDate) {
+        Response::json(['message' => 'No flights', 'shifted' => 0]);
+        return;
+    }
+
+    $minDateObj = new DateTime($minDate);
+    // Target: сделать минимальную дату = завтра
+    $target = new DateTime('today');
+    $target->modify('+1 day');
+
+    $diff   = (int)$target->diff($minDateObj)->format('%r%a'); // положительное = min в будущем
+    $days   = -$diff; // сколько нужно прибавить
+
+    if ($days === 0) {
+        Response::json(['message' => 'Dates are already current', 'shifted' => 0]);
+        return;
+    }
+
+    $db->prepare("
+        UPDATE flights
+        SET scheduled_departure = DATE_ADD(scheduled_departure, INTERVAL ? DAY),
+            scheduled_arrival   = DATE_ADD(scheduled_arrival,   INTERVAL ? DAY),
+            actual_departure    = IF(actual_departure IS NOT NULL, DATE_ADD(actual_departure, INTERVAL ? DAY), NULL),
+            actual_arrival      = IF(actual_arrival   IS NOT NULL, DATE_ADD(actual_arrival,   INTERVAL ? DAY), NULL),
+            updated_at          = NOW()
+    ")->execute([$days, $days, $days, $days]);
+
+    Response::json([
+        'message'    => "Shifted all flights by $days days",
+        'shifted'    => $days,
+        'newMinDate' => $target->format('Y-m-d'),
+    ]);
+});
 
 // POST /api/flights/search  — должен быть до GET /api/flights/:id
 $router->post('/api/flights/search', function () {

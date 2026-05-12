@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Logo } from "../common/Logo";
 import { ThemeSwitch } from "../common/ThemeSwitch";
-import { Search, Ticket, LogIn, X, Plane, User, LogOut } from "lucide-react";
+import { Search, Ticket, LogIn, X, Plane, User, LogOut, Radio } from "lucide-react";
 import { authService } from "@/lib/services/authService";
 import { apiClient } from "@/lib/api/client";
 import { UserDTO } from "@/types/dto";
@@ -191,12 +191,18 @@ export const Header = () => {
           </button>
         )}
 
+        <Link href="/search" className={iconCls} title="Поиск рейсов">
+          <Plane className="w-5 h-5" />
+        </Link>
+
         {currentUser ? (
           <>
-            <Link href="/profile" className={iconCls} title="Мои бронирования">
-              <Ticket className="w-5 h-5" />
-            </Link>
-            <Link href="/account" className={iconCls} title="Профиль">
+            {(currentUser.role === "admin" || currentUser.role === "employee") && (
+              <Link href="/dashboard" className={iconCls} title="Панель управления">
+                <Ticket className="w-5 h-5" />
+              </Link>
+            )}
+            <Link href="/account" className={iconCls} title="Личный кабинет">
               <User className="w-5 h-5" />
             </Link>
           </>
@@ -205,6 +211,10 @@ export const Header = () => {
             <LogIn className="w-5 h-5" />
           </Link>
         )}
+
+        <Link href="/flight-status" className={iconCls} title="Статус рейсов">
+          <Radio className="w-5 h-5" />
+        </Link>
 
         <ThemeSwitch />
       </div>

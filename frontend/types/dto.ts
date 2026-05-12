@@ -68,6 +68,9 @@ export interface UserDTO {
   phone: string;
   dateOfBirth: string;
   nationality: string;
+  documentType: string;
+  documentNumber: string;
+  documentExpiry: string;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   loyaltyAccount?: LoyaltyAccountDTO;
@@ -80,6 +83,11 @@ export interface UpdateUserRequestDTO {
   middleName?: string;
   phone?: string;
   email?: string;
+  dateOfBirth?: string;
+  nationality?: string;
+  documentType?: string;
+  documentNumber?: string;
+  documentExpiry?: string;
 }
 
 export interface ChangePasswordRequestDTO {

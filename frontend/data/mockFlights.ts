@@ -1194,47 +1194,46 @@ export const mockFares: Record<string, Fare[]> = {
   ],
 };
 
-// Placeholder images via picsum (replace with real city photos later)
 export const popularDestinations = [
   {
     city: "Санкт-Петербург",
     code: "LED",
-    image: "https://picsum.photos/seed/spb-city/800/500",
+    image: "/images/petersburg.jpg",
     description: "Культурная столица России",
     fromPrice: 2990,
   },
   {
     city: "Сочи",
     code: "AER",
-    image: "https://picsum.photos/seed/sochi-resort/800/500",
+    image: "/images/sochi.jpg",
     description: "Черноморский курорт",
     fromPrice: 8900,
   },
   {
     city: "Казань",
     code: "KZN",
-    image: "https://picsum.photos/seed/kazan-kremlin/800/500",
+    image: "/images/kazan.jpg",
     description: "Столица Татарстана",
     fromPrice: 6200,
   },
   {
     city: "Екатеринбург",
     code: "SVX",
-    image: "https://picsum.photos/seed/ekb-ural/800/500",
+    image: "/images/yekaterinburg.jpg",
     description: "Уральская столица",
     fromPrice: 9500,
   },
   {
     city: "Новосибирск",
     code: "OVB",
-    image: "https://picsum.photos/seed/nsk-siberia/800/500",
+    image: "/images/novosybirsk.jpg",
     description: "Сердце Сибири",
     fromPrice: 15200,
   },
   {
     city: "Владивосток",
     code: "VVO",
-    image: "https://picsum.photos/seed/vlad-harbor/800/500",
+    image: "/images/vladivostok.jpg",
     description: "Дальневосточный порт",
     fromPrice: 22500,
   },

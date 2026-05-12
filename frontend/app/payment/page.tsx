@@ -136,9 +136,9 @@ function PaymentPageContent() {
                 </Button>
               </Link>
             )}
-            <Link href="/profile">
+            <Link href="/account">
               <Button className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white">
-                Перейти к бронированиям
+                Перейти в личный кабинет
               </Button>
             </Link>
             <Link href="/">
@@ -154,12 +154,44 @@ function PaymentPageContent() {
 
   const amount = booking?.totalAmount ?? 0;
 
+  const steps = [
+    { label: "Рейс", done: true },
+    { label: "Пассажиры", done: true },
+    { label: "Услуги", done: true },
+    { label: "Оплата", done: false, active: true },
+  ];
+
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 md:px-8 lg:px-16 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
           Оплата бронирования
         </h1>
+
+        {/* Stepper */}
+        <div className="flex items-center mb-8 select-none">
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-center flex-1 last:flex-none">
+              <div className="flex flex-col items-center">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                  step.done && !step.active
+                    ? "bg-green-500 text-white"
+                    : step.active
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+                }`}>
+                  {step.done && !step.active ? "✓" : i + 1}
+                </div>
+                <span className={`mt-1 text-xs font-medium whitespace-nowrap ${
+                  step.active ? "text-blue-600 dark:text-blue-400" : step.done ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"
+                }`}>{step.label}</span>
+              </div>
+              {i < steps.length - 1 && (
+                <div className={`flex-1 h-0.5 mx-2 mt-[-12px] transition-all ${step.done && !step.active ? "bg-green-400" : "bg-gray-200 dark:bg-gray-700"}`} />
+              )}
+            </div>
+          ))}
+        </div>
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
@@ -208,6 +240,37 @@ function PaymentPageContent() {
                     Данные карты
                   </h2>
 
+                  {/* Визуализация карты */}
+                  <div className="relative w-full max-w-sm mx-auto h-44 rounded-2xl mb-6 overflow-hidden select-none"
+                    style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%)" }}>
+                    <div className="absolute inset-0 opacity-10" style={{
+                      backgroundImage: "repeating-linear-gradient(45deg, white 0px, white 1px, transparent 1px, transparent 12px)"
+                    }} />
+                    <div className="absolute top-4 right-4 flex gap-1">
+                      <div className="w-8 h-8 rounded-full bg-red-500 opacity-90" />
+                      <div className="w-8 h-8 rounded-full bg-yellow-400 opacity-90 -ml-3" />
+                    </div>
+                    <div className="absolute bottom-4 left-5 right-5">
+                      <p className="font-mono text-white text-lg tracking-widest mb-2">
+                        {cardNumber
+                          ? cardNumber.replace(/(.{4})/g, "$1 ").trim()
+                          : "•••• •••• •••• ••••"}
+                      </p>
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <p className="text-blue-200 text-[10px] uppercase tracking-wide mb-0.5">Держатель</p>
+                          <p className="text-white text-sm font-semibold uppercase tracking-wide">
+                            {cardHolder || "CARD HOLDER"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-blue-200 text-[10px] uppercase tracking-wide mb-0.5">Действует до</p>
+                          <p className="text-white text-sm font-semibold font-mono">{cardExpiry || "MM/YY"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -216,10 +279,13 @@ function PaymentPageContent() {
                       <input
                         type="text"
                         value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
+                          setCardNumber(raw.replace(/(.{4})/g, "$1 ").trim());
+                        }}
                         placeholder="1234 5678 9012 3456"
                         maxLength={19}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-mono tracking-widest"
                         required
                         disabled={isProcessing}
                       />
@@ -233,10 +299,13 @@ function PaymentPageContent() {
                         <input
                           type="text"
                           value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value)}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/\D/g, "").slice(0, 4);
+                            setCardExpiry(raw.length > 2 ? raw.slice(0, 2) + "/" + raw.slice(2) : raw);
+                          }}
                           placeholder="MM/YY"
                           maxLength={5}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-mono"
                           required
                           disabled={isProcessing}
                         />

@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Search,
   Plane,
   Clock,
   MapPin,
   AlertCircle,
-  CheckCircle,
   XCircle,
-  Calendar,
+  Radio,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 
@@ -112,12 +112,15 @@ export default function FlightSchedulePage() {
     <div className="min-h-screen pt-24 pb-16 px-4 md:px-8 lg:px-16 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            Расписание рейсов
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Проверьте статус рейса: запланирован, задержан или отменён
+        <div className="mb-8 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white shadow-lg">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+              <Radio className="w-5 h-5 text-white" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold">Статус рейсов</h1>
+          </div>
+          <p className="text-blue-100 mt-1">
+            Введите номер рейса, чтобы узнать актуальный статус: расписание, задержки или отмены
           </p>
         </div>
 
@@ -146,15 +149,11 @@ export default function FlightSchedulePage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Дата вылета (опционально)
                 </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="date"
-                    value={searchDate}
-                    onChange={(e) => setSearchDate(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  />
-                </div>
+                <DatePicker
+                  value={searchDate}
+                  onChange={setSearchDate}
+                  placeholder="Любая дата"
+                />
               </div>
             </div>
 

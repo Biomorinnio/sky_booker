@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { User, Mail, Calendar, FileText, AlertCircle, Plane } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { User, Mail, FileText, AlertCircle, Plane } from "lucide-react";
 import { Passenger } from "@/types";
 import { apiClient } from "@/lib/api/client";
 import { authService } from "@/lib/services/authService";
@@ -128,12 +129,44 @@ function BookingPageInner() {
       year: "numeric",
     });
 
+  const steps = [
+    { label: "Рейс", done: true },
+    { label: "Пассажиры", done: false, active: true },
+    { label: "Услуги", done: false },
+    { label: "Оплата", done: false },
+  ];
+
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 md:px-8 lg:px-16 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
           Оформление бронирования
         </h1>
+
+        {/* Stepper */}
+        <div className="flex items-center mb-8 select-none">
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-center flex-1 last:flex-none">
+              <div className="flex flex-col items-center">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                  step.done
+                    ? "bg-green-500 text-white"
+                    : step.active
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+                }`}>
+                  {step.done ? "✓" : i + 1}
+                </div>
+                <span className={`mt-1 text-xs font-medium whitespace-nowrap ${
+                  step.active ? "text-blue-600 dark:text-blue-400" : step.done ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"
+                }`}>{step.label}</span>
+              </div>
+              {i < steps.length - 1 && (
+                <div className={`flex-1 h-0.5 mx-2 mt-[-12px] transition-all ${step.done ? "bg-green-400" : "bg-gray-200 dark:bg-gray-700"}`} />
+              )}
+            </div>
+          ))}
+        </div>
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
@@ -198,17 +231,17 @@ function BookingPageInner() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Дата рождения *
                       </label>
-                      <input
-                        type="date"
-                        value={passenger.dateOfBirth}
-                        onChange={(e) => {
+                      <DatePicker
+                        value={passenger.dateOfBirth ?? ""}
+                        onChange={(val) => {
                           const p = [...passengers];
-                          p[index].dateOfBirth = e.target.value;
+                          p[index].dateOfBirth = val;
                           setPassengers(p);
                         }}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                        required
+                        placeholder="Выберите дату рождения"
+                        max={new Date().toISOString().split("T")[0]}
                         disabled={isSubmitting}
+                        required
                       />
                     </div>
 
@@ -274,18 +307,17 @@ function BookingPageInner() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Срок действия *
                       </label>
-                      <input
-                        type="date"
-                        value={passenger.documentExpiry}
-                        onChange={(e) => {
+                      <DatePicker
+                        value={passenger.documentExpiry ?? ""}
+                        onChange={(val) => {
                           const p = [...passengers];
-                          p[index].documentExpiry = e.target.value;
+                          p[index].documentExpiry = val;
                           setPassengers(p);
                         }}
+                        placeholder="Выберите дату"
                         min={new Date().toISOString().split("T")[0]}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                        required
                         disabled={isSubmitting}
+                        required
                       />
                     </div>
 
