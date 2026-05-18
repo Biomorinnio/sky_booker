@@ -70,7 +70,8 @@ class APIClient {
         headers,
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
 
       if (!response.ok) {
         if (response.status === 401 && typeof window !== "undefined") {
@@ -81,13 +82,13 @@ class APIClient {
         }
         throw new APIError(
           response.status,
-          data.error?.code || "UNKNOWN_ERROR",
-          data.error?.message || "An error occurred",
-          data.error?.details
+          data?.error?.code || "UNKNOWN_ERROR",
+          data?.error?.message || "An error occurred",
+          data?.error?.details
         );
       }
 
-      return data;
+      return data as T;
     } catch (error) {
       if (error instanceof APIError) {
         throw error;

@@ -269,13 +269,12 @@ export default function AccountPage() {
 
         {/* ── Шапка профиля ── */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700/50">
-          <div className="h-24 bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-800 dark:to-blue-600" />
-          <div className="px-6 pb-6">
-            <div className="flex items-end gap-4 -mt-8 mb-4">
-              <div className="w-20 h-20 rounded-full bg-white dark:bg-gray-700 border-4 border-white dark:border-gray-800 shadow-lg flex items-center justify-center flex-shrink-0">
+          <div className="p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm flex items-center justify-center flex-shrink-0">
                 <User className="w-10 h-10 text-gray-400 dark:text-gray-500" />
               </div>
-              <div className="pb-1 flex-1 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+              <div className="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                     {user.lastName} {user.firstName}{user.middleName ? ` ${user.middleName}` : ""}

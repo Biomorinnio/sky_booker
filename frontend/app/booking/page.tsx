@@ -4,7 +4,14 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
-import { User, Mail, FileText, AlertCircle, Plane } from "lucide-react";
+import {
+  User,
+  Mail,
+  FileText,
+  AlertCircle,
+  Plane,
+  Calendar,
+} from "lucide-react";
 import { Passenger } from "@/types";
 import { apiClient } from "@/lib/api/client";
 import { authService } from "@/lib/services/authService";
@@ -89,8 +96,11 @@ function BookingPageInner() {
         true
       );
 
-      sessionStorage.setItem("pendingBooking", JSON.stringify(response.booking));
-      router.push("/payment");
+      sessionStorage.setItem(
+        "pendingBooking",
+        JSON.stringify(response.booking)
+      );
+      router.push("/booking/services");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Ошибка при создании бронирования"
@@ -148,21 +158,35 @@ function BookingPageInner() {
           {steps.map((step, i) => (
             <div key={i} className="flex items-center flex-1 last:flex-none">
               <div className="flex flex-col items-center">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                  step.done
-                    ? "bg-green-500 text-white"
-                    : step.active
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
-                }`}>
+                <div
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                    step.done
+                      ? "bg-green-500 text-white"
+                      : step.active
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+                  }`}
+                >
                   {step.done ? "✓" : i + 1}
                 </div>
-                <span className={`mt-1 text-xs font-medium whitespace-nowrap ${
-                  step.active ? "text-blue-600 dark:text-blue-400" : step.done ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"
-                }`}>{step.label}</span>
+                <span
+                  className={`mt-1 text-xs font-medium whitespace-nowrap ${
+                    step.active
+                      ? "text-blue-600 dark:text-blue-400"
+                      : step.done
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-gray-400 dark:text-gray-500"
+                  }`}
+                >
+                  {step.label}
+                </span>
               </div>
               {i < steps.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-2 mt-[-12px] transition-all ${step.done ? "bg-green-400" : "bg-gray-200 dark:bg-gray-700"}`} />
+                <div
+                  className={`flex-1 h-0.5 mx-2 mt-[-12px] transition-all ${
+                    step.done ? "bg-green-400" : "bg-gray-200 dark:bg-gray-700"
+                  }`}
+                />
               )}
             </div>
           ))}
@@ -280,7 +304,9 @@ function BookingPageInner() {
                       >
                         <option value="passport">Паспорт</option>
                         <option value="id_card">Удостоверение личности</option>
-                        <option value="birth_certificate">Свидетельство о рождении</option>
+                        <option value="birth_certificate">
+                          Свидетельство о рождении
+                        </option>
                       </select>
                     </div>
 
@@ -370,7 +396,10 @@ function BookingPageInner() {
                       type="email"
                       value={contactInfo.email}
                       onChange={(e) =>
-                        setContactInfo({ ...contactInfo, email: e.target.value })
+                        setContactInfo({
+                          ...contactInfo,
+                          email: e.target.value,
+                        })
                       }
                       placeholder="example@mail.com"
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -390,7 +419,10 @@ function BookingPageInner() {
                       <select
                         value={contactInfo.countryCode}
                         onChange={(e) =>
-                          setContactInfo({ ...contactInfo, countryCode: e.target.value })
+                          setContactInfo({
+                            ...contactInfo,
+                            countryCode: e.target.value,
+                          })
                         }
                         className="w-24 px-2 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                         disabled={isSubmitting}
@@ -403,7 +435,10 @@ function BookingPageInner() {
                         type="tel"
                         value={contactInfo.phone}
                         onChange={(e) =>
-                          setContactInfo({ ...contactInfo, phone: e.target.value })
+                          setContactInfo({
+                            ...contactInfo,
+                            phone: e.target.value,
+                          })
                         }
                         placeholder="900 123 45 67"
                         className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -420,7 +455,9 @@ function BookingPageInner() {
                 disabled={isSubmitting || !flightData}
                 className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
               >
-                {isSubmitting ? "Создаём бронирование..." : "Продолжить к оплате"}
+                {isSubmitting
+                  ? "Создаём бронирование..."
+                  : "Продолжить к оплате"}
               </Button>
             </form>
           </div>
@@ -436,7 +473,9 @@ function BookingPageInner() {
                   <div className="flex items-start gap-3">
                     <Plane className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Рейс</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Рейс
+                      </p>
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {flightData.flightNumber}
                       </p>
@@ -446,9 +485,12 @@ function BookingPageInner() {
                   <div className="flex items-start gap-3">
                     <FileText className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Маршрут</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Маршрут
+                      </p>
                       <p className="font-semibold text-gray-900 dark:text-white">
-                        {flightData.origin?.city} → {flightData.destination?.city}
+                        {flightData.origin?.city} →{" "}
+                        {flightData.destination?.city}
                       </p>
                     </div>
                   </div>
@@ -456,12 +498,15 @@ function BookingPageInner() {
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Дата и время</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Дата и время
+                      </p>
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {fmtDate(flightData.scheduledDeparture)}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {fmtTime(flightData.scheduledDeparture)} → {fmtTime(flightData.scheduledArrival)}
+                        {fmtTime(flightData.scheduledDeparture)} →{" "}
+                        {fmtTime(flightData.scheduledArrival)}
                       </p>
                     </div>
                   </div>
@@ -469,7 +514,9 @@ function BookingPageInner() {
                   <div className="flex items-start gap-3">
                     <User className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Пассажиры</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Пассажиры
+                      </p>
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {passengers.length}{" "}
                         {passengers.length === 1 ? "пассажир" : "пассажира"}
@@ -481,7 +528,9 @@ function BookingPageInner() {
                     <div className="flex items-start gap-3">
                       <FileText className="w-5 h-5 text-gray-400 mt-1" />
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Тариф</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Тариф
+                        </p>
                         <p className="font-semibold text-gray-900 dark:text-white capitalize">
                           {selectedFare.class}
                         </p>
@@ -492,7 +541,10 @@ function BookingPageInner() {
               ) : (
                 <div className="space-y-3 mb-6 animate-pulse">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-12 bg-gray-100 dark:bg-gray-700 rounded" />
+                    <div
+                      key={i}
+                      className="h-12 bg-gray-100 dark:bg-gray-700 rounded"
+                    />
                   ))}
                 </div>
               )}
@@ -501,13 +553,17 @@ function BookingPageInner() {
                 {selectedFare && (
                   <>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-600 dark:text-gray-400">Тариф</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Тариф
+                      </span>
                       <span className="font-semibold text-gray-900 dark:text-white">
                         ₽{selectedFare.price?.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between items-center mb-4">
-                      <span className="text-gray-600 dark:text-gray-400">Пассажиры</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Пассажиры
+                      </span>
                       <span className="font-semibold text-gray-900 dark:text-white">
                         × {passengers.length}
                       </span>
@@ -531,7 +587,13 @@ function BookingPageInner() {
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen pt-24 flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" /></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen pt-24 flex items-center justify-center">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+        </div>
+      }
+    >
       <BookingPageInner />
     </Suspense>
   );

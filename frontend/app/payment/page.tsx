@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   CreditCard,
-  Smartphone,
+  QrCode,
   Building,
   CheckCircle,
   Lock,
@@ -19,11 +19,13 @@ import { authService } from "@/lib/services/authService";
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen pt-24 pb-16 px-4 bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen pt-24 pb-16 px-4 bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+        </div>
+      }
+    >
       <PaymentPageContent />
     </Suspense>
   );
@@ -128,7 +130,7 @@ function PaymentPageContent() {
               </p>
             </div>
           )}
-          <div className="space-y-3">
+          <div className="space-y-3 flex flex-col gap-1">
             {booking?.id && (
               <Link href={`/ticket/${booking.id}`}>
                 <Button className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white">
@@ -173,21 +175,37 @@ function PaymentPageContent() {
           {steps.map((step, i) => (
             <div key={i} className="flex items-center flex-1 last:flex-none">
               <div className="flex flex-col items-center">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                  step.done && !step.active
-                    ? "bg-green-500 text-white"
-                    : step.active
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
-                }`}>
+                <div
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                    step.done && !step.active
+                      ? "bg-green-500 text-white"
+                      : step.active
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+                  }`}
+                >
                   {step.done && !step.active ? "✓" : i + 1}
                 </div>
-                <span className={`mt-1 text-xs font-medium whitespace-nowrap ${
-                  step.active ? "text-blue-600 dark:text-blue-400" : step.done ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"
-                }`}>{step.label}</span>
+                <span
+                  className={`mt-1 text-xs font-medium whitespace-nowrap ${
+                    step.active
+                      ? "text-blue-600 dark:text-blue-400"
+                      : step.done
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-gray-400 dark:text-gray-500"
+                  }`}
+                >
+                  {step.label}
+                </span>
               </div>
               {i < steps.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-2 mt-[-12px] transition-all ${step.done && !step.active ? "bg-green-400" : "bg-gray-200 dark:bg-gray-700"}`} />
+                <div
+                  className={`flex-1 h-0.5 mx-2 mt-[-12px] transition-all ${
+                    step.done && !step.active
+                      ? "bg-green-400"
+                      : "bg-gray-200 dark:bg-gray-700"
+                  }`}
+                />
               )}
             </div>
           ))}
@@ -211,11 +229,32 @@ function PaymentPageContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {(
                     [
-                      { method: "card", icon: <CreditCard className="w-8 h-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" />, label: "Банковская карта" },
-                      { method: "apple_pay", icon: <Smartphone className="w-8 h-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" />, label: "Apple Pay" },
-                      { method: "google_pay", icon: <Smartphone className="w-8 h-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" />, label: "Google Pay" },
-                      { method: "bank_transfer", icon: <Building className="w-8 h-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" />, label: "Банковский перевод" },
-                    ] as { method: PaymentMethod; icon: React.ReactNode; label: string }[]
+                      {
+                        method: "card",
+                        icon: (
+                          <CreditCard className="w-8 h-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                        ),
+                        label: "Банковская карта",
+                      },
+                      {
+                        method: "paypal",
+                        icon: (
+                          <QrCode className="w-8 h-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                        ),
+                        label: "СБП",
+                      },
+                      {
+                        method: "bank_transfer",
+                        icon: (
+                          <Building className="w-8 h-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                        ),
+                        label: "Банковский перевод",
+                      },
+                    ] as {
+                      method: PaymentMethod;
+                      icon: React.ReactNode;
+                      label: string;
+                    }[]
                   ).map(({ method, icon, label }) => (
                     <button
                       key={method}
@@ -228,7 +267,9 @@ function PaymentPageContent() {
                       }`}
                     >
                       {icon}
-                      <p className="font-semibold text-gray-900 dark:text-white">{label}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {label}
+                      </p>
                     </button>
                   ))}
                 </div>
@@ -241,11 +282,20 @@ function PaymentPageContent() {
                   </h2>
 
                   {/* Визуализация карты */}
-                  <div className="relative w-full max-w-sm mx-auto h-44 rounded-2xl mb-6 overflow-hidden select-none"
-                    style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%)" }}>
-                    <div className="absolute inset-0 opacity-10" style={{
-                      backgroundImage: "repeating-linear-gradient(45deg, white 0px, white 1px, transparent 1px, transparent 12px)"
-                    }} />
+                  <div
+                    className="relative w-full max-w-sm mx-auto h-44 rounded-2xl mb-6 overflow-hidden select-none"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%)",
+                    }}
+                  >
+                    <div
+                      className="absolute inset-0 opacity-10"
+                      style={{
+                        backgroundImage:
+                          "repeating-linear-gradient(45deg, white 0px, white 1px, transparent 1px, transparent 12px)",
+                      }}
+                    />
                     <div className="absolute top-4 right-4 flex gap-1">
                       <div className="w-8 h-8 rounded-full bg-red-500 opacity-90" />
                       <div className="w-8 h-8 rounded-full bg-yellow-400 opacity-90 -ml-3" />
@@ -258,14 +308,20 @@ function PaymentPageContent() {
                       </p>
                       <div className="flex justify-between items-end">
                         <div>
-                          <p className="text-blue-200 text-[10px] uppercase tracking-wide mb-0.5">Держатель</p>
+                          <p className="text-blue-200 text-[10px] uppercase tracking-wide mb-0.5">
+                            Держатель
+                          </p>
                           <p className="text-white text-sm font-semibold uppercase tracking-wide">
                             {cardHolder || "CARD HOLDER"}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-blue-200 text-[10px] uppercase tracking-wide mb-0.5">Действует до</p>
-                          <p className="text-white text-sm font-semibold font-mono">{cardExpiry || "MM/YY"}</p>
+                          <p className="text-blue-200 text-[10px] uppercase tracking-wide mb-0.5">
+                            Действует до
+                          </p>
+                          <p className="text-white text-sm font-semibold font-mono">
+                            {cardExpiry || "MM/YY"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -280,7 +336,9 @@ function PaymentPageContent() {
                         type="text"
                         value={cardNumber}
                         onChange={(e) => {
-                          const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
+                          const raw = e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 16);
                           setCardNumber(raw.replace(/(.{4})/g, "$1 ").trim());
                         }}
                         placeholder="1234 5678 9012 3456"
@@ -300,8 +358,14 @@ function PaymentPageContent() {
                           type="text"
                           value={cardExpiry}
                           onChange={(e) => {
-                            const raw = e.target.value.replace(/\D/g, "").slice(0, 4);
-                            setCardExpiry(raw.length > 2 ? raw.slice(0, 2) + "/" + raw.slice(2) : raw);
+                            const raw = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 4);
+                            setCardExpiry(
+                              raw.length > 2
+                                ? raw.slice(0, 2) + "/" + raw.slice(2)
+                                : raw
+                            );
                           }}
                           placeholder="MM/YY"
                           maxLength={5}
@@ -352,7 +416,8 @@ function PaymentPageContent() {
                     Безопасная оплата
                   </p>
                   <p className="text-xs text-blue-700 dark:text-blue-400">
-                    Все платежи защищены SSL-шифрованием. Мы не храним данные вашей карты.
+                    Все платежи защищены SSL-шифрованием. Мы не храним данные
+                    вашей карты.
                   </p>
                 </div>
               </div>
@@ -364,7 +429,9 @@ function PaymentPageContent() {
               >
                 {isProcessing
                   ? "Обработка..."
-                  : `Оплатить${amount > 0 ? ` ₽${amount.toLocaleString()}` : ""}`}
+                  : `Оплатить${
+                      amount > 0 ? ` ₽${amount.toLocaleString()}` : ""
+                    }`}
               </Button>
             </form>
           </div>
@@ -379,19 +446,26 @@ function PaymentPageContent() {
                 {booking?.flight ? (
                   <>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Рейс</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Рейс
+                      </span>
                       <span className="font-semibold text-gray-900 dark:text-white">
                         {booking.flight.flightNumber}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Маршрут</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Маршрут
+                      </span>
                       <span className="font-semibold text-gray-900 dark:text-white">
-                        {booking.flight.origin?.code} → {booking.flight.destination?.code}
+                        {booking.flight.origin?.code} →{" "}
+                        {booking.flight.destination?.code}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Дата</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Дата
+                      </span>
                       <span className="font-semibold text-gray-900 dark:text-white">
                         {fmtDate(booking.flight.scheduledDeparture)}
                       </span>
@@ -411,13 +485,17 @@ function PaymentPageContent() {
 
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Стоимость билета</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Стоимость билета
+                  </span>
                   <span className="text-gray-900 dark:text-white">
                     ₽{amount.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Сервисный сбор</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Сервисный сбор
+                  </span>
                   <span className="text-gray-900 dark:text-white">₽0</span>
                 </div>
                 <div className="flex justify-between items-center text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-700">

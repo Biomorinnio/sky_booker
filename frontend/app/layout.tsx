@@ -6,13 +6,6 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "../providers/ThemeProvider";
 
-import { Inter } from "next/font/google";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
 export const metadata: Metadata = {
   title: "SkyBooker - Онлайн-бронирование авиабилетов",
   description:
@@ -26,9 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} font-sans bg-background text-foreground antialiased`}
-      >
+      <body className="font-sans bg-background text-foreground antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

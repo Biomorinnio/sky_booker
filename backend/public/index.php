@@ -4,8 +4,14 @@ declare(strict_types=1);
 // ============================================================
 // CORS — разрешаем запросы от Next.js фронта
 // ============================================================
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
-header("Access-Control-Allow-Origin: $origin");
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3001',
+];
+header('Access-Control-Allow-Origin: ' . (in_array($origin, $allowedOrigins, true) ? $origin : 'http://localhost:3000'));
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 header('Access-Control-Allow-Credentials: true');
@@ -541,6 +547,27 @@ $router->get('/api/airports', function () {
         'city'     => $a['city'],
         'country'  => $a['country'],
         'timezone' => $a['timezone'],
+    ], $rows));
+});
+
+// GET /api/aircrafts
+$router->get('/api/aircrafts', function () {
+    Auth::requireRole('employee', 'admin');
+
+    $db   = Database::getInstance();
+    $rows = $db->query('
+        SELECT id, registration_number, model, manufacturer, total_seats
+        FROM aircrafts
+        WHERE is_active = 1
+        ORDER BY model, registration_number
+    ')->fetchAll();
+
+    Response::json(array_map(fn($a) => [
+        'id'                 => $a['id'],
+        'registrationNumber' => $a['registration_number'],
+        'model'              => $a['model'],
+        'manufacturer'       => $a['manufacturer'],
+        'totalSeats'         => (int)$a['total_seats'],
     ], $rows));
 });
 
